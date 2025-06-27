@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛍️ Shop Mart
 
-## Getting Started
+**Shop Mart** is a full-stack e-commerce platform built with **Next.js**, **MongoDB**, and **Razorpay**. It includes a secure admin panel, user authentication, product listing, cart management, and online payment functionality.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Features
+
+- 🔐 JWT-based user & admin authentication
+- 🛒 Cart management with MongoDB persistence
+- 📦 Product listing, filtering, and infinite scroll
+- 🧾 Razorpay payment integration
+- 📤 Email-based OTP verification (Nodemailer)
+- 🧑‍💻 Admin dashboard to manage orders & products
+- 🌗 Light/Dark mode toggle
+
+---
+
+## 📁 Folder Structure
+
+```
+/app              → Next.js pages & routing
+/components       → UI components (Navbar, Cards, etc.)
+/lib              → Utility functions (auth, payment, etc.)
+/models           → Mongoose models (User, Product, Order)
+/public           → Static assets
+/styles           → Tailwind CSS configs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔐 Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env` file at the root using the provided `.env.example`.
 
-## Learn More
+```bash
+cp .env.example .env
+```
 
-To learn more about Next.js, take a look at the following resources:
+Fill in your credentials inside `.env`. Example structure:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+MONGODB_URI=your_mongodb_uri_here
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+JWT_USER_SECRET=your_jwt_user_secret_here
+JWT_ADMIN_SECRET=your_jwt_admin_secret_here
 
-## Deploy on Vercel
+EMAIL_USER=your_email_user_here
+EMAIL_PASS=your_email_pass_here
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ADMIN_EMAIL=your_admin_email_here
+ADMIN_PASSWORD=your_admin_password_here
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your_next_public_razorpay_key_id_here
+RAZORPAY_SECRET_KEY=your_razorpay_secret_key_here
+```
+
+---
+
+## 🛠️ Getting Started
+
+1. **Clone the repository**  
+   ```bash
+   git clone https://github.com/jayeshhmanek/ Shop Mart.git
+   cd  Shop Mart
+   ```
+
+2. **Install dependencies**  
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment**  
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Run the development server**  
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 🧪 Tech Stack
+
+- **Frontend**: Next.js, React, Tailwind CSS
+- **State Management**: Redux
+- **Backend**: MongoDB (Mongoose), Node.js API routes
+- **Payments**: Razorpay
+- **Email**: Nodemailer with Gmail SMTP
+
+---
+
+## 👨‍💻 Author
+
+**Jayesh H. Manek**  
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
