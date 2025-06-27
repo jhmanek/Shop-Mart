@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import * as Yup from "yup";
@@ -40,6 +40,12 @@ export default function ContactPage() {
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [formStatus, setFormStatus] = React.useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1200); // 1.2s loading effect
+    return () => clearTimeout(timer);
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -66,6 +72,18 @@ export default function ContactPage() {
       setTimeout(() => setFormStatus(null), 4000);
     }
   };
+
+  if (loading || isSubmitting) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-black">
+        <img
+          src="/favicon.png"
+          alt="Loading"
+          className="w-24 h-24 md:w-32 md:h-32 object-contain animate-bounce dark:invert-100"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white flex flex-col items-center justify-center py-16 px-4 md:px-0">

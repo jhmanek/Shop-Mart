@@ -5,12 +5,23 @@ import ReduxProvider from "@/app/cart/redux";
 import ClientLayoutWrapper from "@/components/nav-clinetside";
 import Head from "next/head";
 import Providers from "./provider";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   display: "swap",
 });
+<Toaster
+  position="top-right"
+  toastOptions={{
+    style: {
+      padding: 0,
+      borderRadius: "8px",
+      boxShadow: "none",
+    },
+  }}
+/>;
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -49,6 +60,7 @@ export default function RootLayout({
             <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
           </Providers>
         </ReduxProvider>
+        <Toaster position="top-right" reverseOrder={false} />
       </body>
     </html>
   );

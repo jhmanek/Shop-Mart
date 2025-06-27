@@ -87,7 +87,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.clear();
     router.push("/Pages/login");
   };
 
@@ -104,24 +104,27 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col lg:flex-row">
-      {/* Sidebar */}
-      <aside className="w-full lg:w-64 bg-white dark:bg-black p-6 border-b lg:border-r lg:border-b-0 border-gray-200 dark:border-gray-700 flex flex-row lg:flex-col justify-between lg:justify-start items-center lg:items-start gap-4">
-        <button className="w-full text-left px-4 py-2 bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300 rounded font-bold">
-          Personal Information
-        </button>
-        <button
-          onClick={handleLogout}
-          className="w-full text-left px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded font-bold cursor-pointer"
-        >
-          Logout
-        </button>
-      </aside>
+    <div className="bg-white dark:bg-black text-black dark:text-white flex flex-col lg:flex-row">
+      {/* Sidebar only for logged-in users */}
+      {user && (
+        <aside className="w-full lg:w-64 bg-white dark:bg-black p-6 border-b lg:border-r lg:border-b-0 border-gray-200 dark:border-gray-700 flex flex-row lg:flex-col justify-between lg:justify-start items-center lg:items-start gap-4">
+          <button className="w-full text-left px-4 py-2 bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300 rounded font-bold">
+            Personal Information
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded font-bold cursor-pointer"
+          >
+            Logout
+          </button>
+        </aside>
+      )}
 
       {/* Main Content */}
-      <main className="flex-1 flex justify-center items-start p-6 sm:p-10">
-        {user && (
+      <main className="flex-1 flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-10 overflow-x-hidden">
+        {user ? (
           <div className="w-full max-w-3xl md:mt-20 lg:mt-40">
+            {/* EXISTING PROFILE UI */}
             <h1 className="text-2xl font-bold mb-6 text-center lg:text-left">
               Personal Information
             </h1>
@@ -218,6 +221,32 @@ export default function ProfilePage() {
                   Edit Profile
                 </button>
               )}
+            </div>
+          </div>
+        ) : (
+          <div className="w-full max-w-xl bg-orange-50 dark:bg-neutral-900 border border-orange-200 dark:border-neutral-700 rounded-3xl px-6 py-10 text-center shadow-2xl">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-orange-600 dark:text-orange-400 mb-4 sm:mb-6">
+              You're not logged in
+            </h2>
+
+            <p className="text-sm sm:text-base md:text-lg text-gray-700 dark:text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              Sign in to view your profile and securely manage your personal
+              details.
+            </p>
+
+            <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+              <button
+                onClick={() => router.push("/Pages/login")}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 py-3 rounded-xl text-base sm:text-lg font-semibold shadow hover:shadow-lg transition duration-300 cursor-pointer"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => router.push("/Pages/signup")}
+                className="bg-white dark:bg-neutral-800 border border-orange-500 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-950 px-6 sm:px-8 py-3 rounded-xl text-base sm:text-lg font-semibold shadow hover:shadow-lg transition duration-300 cursor-pointer"
+              >
+                Signup
+              </button>
             </div>
           </div>
         )}

@@ -16,10 +16,25 @@
 //     );
 //   }
 // }
-import { NextResponse } from "next/server";
-import { sendAndGenerateOTP } from "@/lib/mailer"; // make sure this path is correct
+import { NextRequest, NextResponse } from "next/server";
+import { sendAndGenerateOTP } from "@/lib/mailer";
+import { rateLimit } from "@/lib/rateLimiter";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // IP-based rate limit
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const allowed = rateLimit(ip, 5, 3000); // 5 req per 3 sec
+
+  if (!allowed) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Too many OTP requests. Please wait a few seconds.",
+      },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await req.json();
 

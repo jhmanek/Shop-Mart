@@ -2,14 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongoose";
 import User from "@/model/user";
 import { authenticate } from "@/lib/authentication";
+import { rateLimit } from "@/lib/rateLimiter";
 
 // ✅ GET: Fetch user's address
 export async function GET(req: NextRequest) {
   await connectDB();
-  const user = await authenticate(req);
+  const user: any = await authenticate(req);
 
   if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const allowed = rateLimit(user._id.toString(), 5, 3000);
+  if (!allowed) {
+    return NextResponse.json(
+      { message: "Too many requests. Please slow down." },
+      { status: 429 }
+    );
   }
 
   const dbUser = await User.findById(user._id).select("address");
@@ -19,10 +28,18 @@ export async function GET(req: NextRequest) {
 // ✅ PATCH: Update address (only for users)
 export async function PATCH(req: NextRequest) {
   await connectDB();
-  const user = await authenticate(req);
+  const user: any = await authenticate(req);
 
   if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const allowed = rateLimit(user._id.toString(), 5, 3000);
+  if (!allowed) {
+    return NextResponse.json(
+      { message: "Too many updates. Please wait a moment." },
+      { status: 429 }
+    );
   }
 
   if (user.role !== "user") {
@@ -63,10 +80,18 @@ export async function PATCH(req: NextRequest) {
 // ✅ DELETE: Remove address (only for users)
 export async function DELETE(req: NextRequest) {
   await connectDB();
-  const user = await authenticate(req);
+  const user: any = await authenticate(req);
 
   if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const allowed = rateLimit(user._id.toString(), 5, 3000);
+  if (!allowed) {
+    return NextResponse.json(
+      { message: "Too many delete attempts. Please slow down." },
+      { status: 429 }
+    );
   }
 
   if (user.role !== "user") {

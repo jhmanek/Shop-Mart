@@ -1,222 +1,172 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Product } from "@//model/products";
+import { Product } from "@/model/products";
 import connectDB from "@/lib/mongoose";
 import { isAdmin } from "@/lib/authentication";
 import mongoose from "mongoose";
+import { rateLimit } from "@/lib/rateLimiter";
 
-// GET: Fetch all products
+// Optional Rate Limiter Utility
+// const rateLimitMap = new Map<string, { count: number; timestamp: number }>();
+// const rateLimit = (ip: string, limit: number, interval: number) => {
+//   const now = Date.now();
+//   const entry = rateLimitMap.get(ip) || { count: 0, timestamp: now };
+//   if (now - entry.timestamp < interval) {
+//     if (entry.count >= limit) return false;
+//     entry.count++;
+//   } else {
+//     entry.count = 1;
+//     entry.timestamp = now;
+//   }
+//   rateLimitMap.set(ip, entry);
+//   return true;
+// };
+
 export async function GET(req: NextRequest) {
   await connectDB();
-
   const user = await isAdmin(req);
-
-  if (!user) {
+  if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const products = await Product.find();
-
-    return NextResponse.json(products, { status: 200 });
+    return NextResponse.json({ success: true, products }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Failed to fetch products" },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }
 }
 
-// POST: Create new product
 export async function POST(req: NextRequest) {
   await connectDB();
-
   const user = await isAdmin(req);
-  if (!user) {
+  if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  if (!rateLimit(ip, 10, 3000))
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   try {
     const data = await req.json();
-
-    if (!data.title || !data.price) {
+    if (!data.title || typeof data.price !== "number") {
       return NextResponse.json(
         { error: "Title and price are required" },
         { status: 400 }
       );
     }
-
     const product = await Product.create(data);
-    return NextResponse.json(product, { status: 201 });
+    return NextResponse.json({ success: true, product }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Failed to create product" },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }
 }
 
-// DELETE: Delete a product by ID (via query param)
-// export async function DELETE(req: NextRequest) {
-//   await connectDB();
-
-//   const user = await isAdmin(req);
-//   if (!user) {
-//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//   }
-
-//   const { searchParams } = new URL(req.url);
-//   const id = searchParams.get("id");
-
-//   if (!id) {
-//     return NextResponse.json({ error: "Product ID required" }, { status: 400 });
-//   }
-
-//   if (!mongoose.Types.ObjectId.isValid(id)) {
-//     return NextResponse.json({ error: "Invalid Product ID" }, { status: 400 });
-//   }
-
-//   try {
-//     const deleted = await Product.findByIdAndDelete(id);
-//     if (!deleted) {
-//       return NextResponse.json({ error: "Product not found" }, { status: 404 });
-//     }
-//     return NextResponse.json({ message: "Product deleted successfully" });
-//   } catch (error: any) {
-//     return NextResponse.json(
-//       { error: error.message || "Failed to delete product" },
-//       { status: 500 }
-//     );
-//   }
-// }
 export async function DELETE(req: NextRequest) {
   await connectDB();
-
   const user = await isAdmin(req);
-  if (!user) {
+  if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
-  let id: string;
-  try {
-    const body = await req.json();
-    id = body.id;
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 }
-    );
-  }
-
-  if (!id) {
-    return NextResponse.json({ error: "Product ID required" }, { status: 400 });
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return NextResponse.json({ error: "Invalid Product ID" }, { status: 400 });
-  }
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  if (!rateLimit(ip, 10, 3000))
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   try {
-    const deleted = await Product.findByIdAndDelete(id);
-    if (!deleted) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ message: "Product deleted successfully" });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to delete product" },
-      { status: 500 }
-    );
-  }
-}
-// PATCH: Partially update a product
-export async function PATCH(req: NextRequest) {
-  await connectDB();
-
-  const user = await isAdmin(req);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const data = await req.json();
-    const { id, ...updateData } = data;
-
-    if (!id) {
-      return NextResponse.json(
-        { error: "Product ID required" },
-        { status: 400 }
-      );
-    }
-
+    const { id } = await req.json();
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: "Invalid Product ID" },
         { status: 400 }
       );
     }
+    const deleted = await Product.findByIdAndDelete(id);
+    if (!deleted)
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    return NextResponse.json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
 
+export async function PATCH(req: NextRequest) {
+  await connectDB();
+  const user = await isAdmin(req);
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  if (!rateLimit(ip, 10, 3000))
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+
+  try {
+    const { id, ...updateData } = await req.json();
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: "Invalid Product ID" },
+        { status: 400 }
+      );
+    }
     const updated = await Product.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
-
-    if (!updated) {
+    if (!updated)
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(updated);
+    return NextResponse.json({ success: true, product: updated });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Failed to update product" },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }
 }
 
-// PUT: Fully replace/update a product
 export async function PUT(req: NextRequest) {
   await connectDB();
-
   const user = await isAdmin(req);
-  if (!user) {
+  if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  if (!rateLimit(ip, 10, 3000))
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   try {
-    const data = await req.json();
-    const { id, title, price, description, image, category } = data;
-
-    if (!id || !title || !price || !image || !category) {
+    const { id, title, price, image, category } = await req.json();
+    if (!id || !title || typeof price !== "number" || !image || !category) {
       return NextResponse.json(
-        {
-          error: "Product id, title, price, image, and category are required",
-        },
+        { error: "All fields required" },
         { status: 400 }
       );
     }
-
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: "Invalid Product ID" },
         { status: 400 }
       );
     }
-
     const updated = await Product.findByIdAndUpdate(
       id,
-      { title, price, description, image, category },
+      { title, price, image, category },
       { new: true, runValidators: true, overwrite: true }
     );
-
-    if (!updated) {
+    if (!updated)
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(updated);
+    return NextResponse.json({ success: true, product: updated });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Failed to update product" },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }

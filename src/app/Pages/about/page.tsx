@@ -1,6 +1,32 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export default function About() {
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false); // You can set this if needed elsewhere
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500); // simulate 1.5s load
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || actionLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-black ">
+        <img
+          src="/favicon.png"
+          alt="Loading"
+          className="w-24 h-24 md:w-32 md:h-32 object-contain animate-bounce dark:invert-100"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-900 dark:bg-black dark:text-white font-sans">
       {/* Hero Section */}
@@ -12,10 +38,7 @@ export default function About() {
           className="object-cover"
           priority
         />
-        {/* Overlay */}
         <div className="absolute inset-0 bg-black/10 dark:bg-black/30" />
-
-        {/* Text */}
         <div className="absolute inset-0 flex items-center justify-center px-4">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase tracking-wider text-white text-center drop-shadow-lg">
             About <span className="text-[#FF3F6C]">Shop Mart</span>

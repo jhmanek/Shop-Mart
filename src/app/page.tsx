@@ -6,12 +6,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCart } from "@/app/cart/cartslice";
 import { RootState } from "@/store/store";
 import { Product } from "@/types/types";
-import { TrashIcon, HeartIcon } from "@heroicons/react/24/outline";
+import { TrashIcon } from "@heroicons/react/24/outline";
 import Cart from "@/app/cart/cart";
 import axios from "axios";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import { categories } from "@/utils/categories";
-import { useTheme } from "next-themes";
+import toast from "react-hot-toast";
+import CustomToast from "@/components/customToast";
+import HomeSlider from "@/components/HomeSlider";
 
 const BATCH_SIZE = 8;
 
@@ -23,8 +25,9 @@ export default function HomePage() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
   const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const router = useRouter();
 
-  const { theme, setTheme } = useTheme();
+  // const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   const observerRef = useRef<HTMLDivElement | null>(null);
@@ -90,6 +93,7 @@ export default function HomePage() {
     const product = products.find((p) => p._id === productId);
     if (!product) return;
 
+    // setActionLoading(true); // Optional, shows spinner state
     try {
       const res = await axios.post(
         "http://localhost:3000/api/cart",
@@ -105,7 +109,13 @@ export default function HomePage() {
         }
       );
       dispatch(setCart(res.data.cart));
+      toast.custom((t) => (
+        <CustomToast toast={t} type="success" message="Added to Bag!" />
+      ));
     } catch (error: any) {
+      toast.custom((t) => (
+        <CustomToast toast={t} type="error" message="Failed to add item" />
+      ));
       console.error(
         "Error adding to cart:",
         error.response?.data || error.message
@@ -125,6 +135,8 @@ export default function HomePage() {
       return;
     }
 
+    // setActionLoading(true);
+
     try {
       const res = await axios.patch(
         "http://localhost:3000/api/cart",
@@ -132,11 +144,26 @@ export default function HomePage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       dispatch(setCart(res.data.cart));
+
+      // ✅ Show custom toast with optional onClose action
+      if (action === "increase")
+        toast.custom((t) => (
+          <CustomToast toast={t} type="increase" message="Quantity increased" />
+        ));
+
+      if (action === "decrease")
+        toast.custom((t) => (
+          <CustomToast toast={t} type="decrease" message="Quantity decreased" />
+        ));
+
+      if (action === "remove")
+        toast.custom((t) => (
+          <CustomToast toast={t} type="error" message="Item removed from Bag" />
+        ));
     } catch (error: any) {
-      console.error(
-        "Error updating cart:",
-        error.response?.data || error.message
-      );
+      toast.custom((t) => (
+        <CustomToast toast={t} type="error" message="Failed to update cart" />
+      ));
     } finally {
       setActionLoading(false);
     }
@@ -159,22 +186,35 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col dark:text-white dark:bg-black">
+      <HomeSlider />
       {/* Category Filters */}
-      <div className="flex overflow-x-auto gap-6 px-4 py-4 sm:px-8 mb-6 text-sm font-semibold text-gray-700 bg-white border-b border-b-[#02010136]  dark:text-white dark:bg-black dark:border-b-[rgba(255,255,255,0.5)]">
-        {["", ...categories].map((cat) => (
-          <button
-            key={cat}
-            onClick={() => {
-              setCategoryFilter(cat);
-              setVisibleCount(BATCH_SIZE);
-            }}
-            className={`hover:text-[#FF3F6C] cursor-pointer ${
-              categoryFilter === cat ? "text-[#FF3F6C] underline" : ""
-            }`}
-          >
-            {cat === "" ? "All" : cat.charAt(0).toUpperCase() + cat.slice(1)}
-          </button>
-        ))}
+      <div className="flex overflow-x-auto gap-6 px-4 py-4 sm:px-8 mb-6 text-sm font-semibold text-gray-700 bg-white border-b border-b-[#02010136] dark:text-white dark:bg-black dark:border-b-[rgba(255,255,255,0.5)]">
+        {["", ...categories].map((cat) => {
+          const isActive = categoryFilter === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => {
+                setCategoryFilter(cat);
+                setVisibleCount(BATCH_SIZE);
+              }}
+              className={`px-4 py-2 rounded-full transition-all duration-200 cursor-pointer ${
+                categoryFilter === cat
+                  ? "bg-[#FF3F6C] text-white shadow-md "
+                  : "hover:bg-[#ff3f6c1a] text-gray-700 dark:text-white"
+              }`}
+            >
+              <span>
+                {cat === ""
+                  ? "All"
+                  : cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </span>
+              {isActive && (
+                <span className="w-2 h-2 mt-1 bg-[#FF3F6C] rounded-full"></span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Product Grid */}
@@ -198,10 +238,6 @@ export default function HomePage() {
                     key={product._id}
                     className="bg-white dark:bg-black border border-gray-200 dark:border-neutral-700 p-3 rounded-lg hover:shadow-lg transition duration-300 flex flex-col relative"
                   >
-                    <div className="absolute top-2 right-2 z-10">
-                      <HeartIcon className="h-5 w-5 text-gray-400 hover:text-[#FF3F6C] cursor-pointer" />
-                    </div>
-
                     <div className="relative h-60 w-full">
                       <Image
                         src={product.image}
@@ -302,9 +338,14 @@ export default function HomePage() {
       <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       <footer className="bg-[#2d2d2d] dark:bg-neutral-900 text-center text-sm text-white py-6 mt-10">
-        <p>
-          Data fetched from Fake Store API:{" "}
-          {loading ? "Loading..." : error ? "Error" : "Success!"}
+        <p className="text-gray-300">
+          Bringing you awesome deals from{" "}
+          <span className="font-semibold text-white">Shop Mart</span> 🛒
+        </p>
+        <p className="mt-1 text-gray-400">
+          &copy; {new Date().getFullYear()}{" "}
+          <span className="font-bold text-white">Shop Mart</span> — Built with
+          for smart shoppers.
         </p>
       </footer>
     </div>

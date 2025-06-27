@@ -3,9 +3,21 @@ import connection from "@/lib/mongoose";
 import User from "@/model/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { rateLimit } from "@/lib/rateLimiter";
 
 export async function POST(req: NextRequest) {
   await connection();
+
+  // IP-based limiter
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const allowed = rateLimit(ip, 5, 60000);
+
+  if (!allowed) {
+    return NextResponse.json(
+      { message: "Too many login attempts. Please wait and try again." },
+      { status: 429 }
+    );
+  }
 
   try {
     const { email, password } = await req.json();
@@ -33,14 +45,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Determine role from DB or ADMIN_EMAIL
+    // ✅ Determine role from DB or ENV
     let role = user.role;
     const adminEmail = process.env.ADMIN_EMAIL;
     if (email === adminEmail) {
       role = "admin";
     }
 
-    // ✅ Choose the correct secret
     const secret =
       role === "admin"
         ? process.env.JWT_ADMIN_SECRET
@@ -54,7 +65,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Create token with role and ID
     const token = jwt.sign(
       {
         userId: user._id,
@@ -64,7 +74,6 @@ export async function POST(req: NextRequest) {
       { expiresIn: "7d" }
     );
 
-    // ✅ Return token and user details
     return NextResponse.json(
       {
         message: "Login successful",

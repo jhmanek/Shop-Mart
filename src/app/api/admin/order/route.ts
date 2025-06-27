@@ -238,11 +238,19 @@ import connectDB from "@/lib/mongoose";
 import Order from "@/model/order";
 import { Product } from "@/model/products";
 import { authenticate, isAdmin } from "@/lib/authentication";
+import { rateLimit } from "@/lib/rateLimiter"; // ✅ Rate limiter
 
-// POST: Create new order
+// 📦 POST: Create new order (user level, not admin)
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
+
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const allowed = rateLimit(ip, 5, 3000); // Regular user limit
+    if (!allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const user = await authenticate(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -316,11 +324,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET: Fetch all or filtered orders (admin only)
-// GET: Fetch all or filtered orders (admin only)
+// 🧾 GET: Admin fetch orders
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
+
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const allowed = rateLimit(ip, 10, 3000); // Admin GET limit
+    if (!allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const user = await isAdmin(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -338,7 +352,6 @@ export async function GET(req: NextRequest) {
       .sort({ createdAt: -1 })
       .populate("user", "name email");
 
-    // 👇 Update orderStatus based on time difference
     const now = new Date();
     const updatedOrders = await Promise.all(
       orders.map(async (order) => {
@@ -349,18 +362,11 @@ export async function GET(req: NextRequest) {
           (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
 
         let newStatus = order.orderStatus;
+        if (hoursPassed < 1) newStatus = "confirmed";
+        else if (hoursPassed < 24) newStatus = "place";
+        else if (hoursPassed < 48) newStatus = "shipped";
+        else newStatus = "delivered";
 
-        if (hoursPassed < 1) {
-          newStatus = "confirmed";
-        } else if (hoursPassed >= 1 && hoursPassed < 24) {
-          newStatus = "place";
-        } else if (hoursPassed >= 24 && hoursPassed < 48) {
-          newStatus = "shipped";
-        } else if (hoursPassed >= 48) {
-          newStatus = "delivered";
-        }
-
-        // ✅ Save only if changed
         if (newStatus !== order.orderStatus) {
           order.orderStatus = newStatus;
           await order.save();
@@ -380,16 +386,24 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// PATCH: Update order status/payment (admin only)
+// 🛠️ PATCH: Admin update order status/payment
 export async function PATCH(req: NextRequest) {
   try {
     await connectDB();
+
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const allowed = rateLimit(ip, 10, 3000); // Admin update limit
+    if (!allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const user = await isAdmin(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { orderId, orderStatus, paymentStatus } = await req.json();
+
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       { orderStatus, paymentStatus },
@@ -406,10 +420,20 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// DELETE: Remove an order (admin only)
+// ❌ DELETE: Admin delete order
 export async function DELETE(req: NextRequest) {
   try {
     await connectDB();
+
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const allowed = rateLimit(ip, 5, 3000); // Delete limit tighter
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many delete attempts" },
+        { status: 429 }
+      );
+    }
+
     const user = await isAdmin(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

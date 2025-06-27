@@ -3,9 +3,20 @@ import connection from "@/lib/mongoose";
 import User from "@/model/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { rateLimit } from "@/lib/rateLimiter";
 
 export async function POST(req: NextRequest) {
   await connection();
+
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const allowed = rateLimit(ip, 5, 60000); // 5 requests per 3 seconds
+
+  if (!allowed) {
+    return NextResponse.json(
+      { message: "Too many signup attempts. Please slow down." },
+      { status: 429 }
+    );
+  }
 
   try {
     const { name, email, password, mobile } = await req.json();
@@ -27,13 +38,12 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 🧠 Default role is "user" unless specified
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
       mobile,
-      role: "user", // explicitly set role (optional if your schema already does)
+      role: "user",
     });
 
     await newUser.save();
