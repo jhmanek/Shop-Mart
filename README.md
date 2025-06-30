@@ -6,13 +6,13 @@
 
 ## 🚀 Features
 
-- 🔐 JWT-based user & admin authentication
-- 🛒 Cart management with MongoDB persistence
-- 📦 Product listing, filtering, and infinite scroll
-- 🧾 Razorpay payment integration
-- 📤 Email-based OTP verification (Nodemailer)
-- 🧑‍💻 Admin dashboard to manage orders & products
-- 🌗 Light/Dark mode toggle
+* 🔐 JWT-based user & admin authentication
+* 🛒 Cart management with MongoDB persistence
+* 📦 Product listing, filtering, and infinite scroll
+* 🧾 Razorpay payment integration
+* 📤 Email-based OTP verification (Nodemailer)
+* 🧑‍💻 Admin dashboard to manage orders & products
+* 🌗 Light/Dark mode toggle
 
 ---
 
@@ -90,11 +90,45 @@ RAZORPAY_SECRET_KEY=your_razorpay_secret_key_here
 
 ## 🧪 Tech Stack
 
-- **Frontend**: Next.js, React, Tailwind CSS
-- **State Management**: Redux
-- **Backend**: MongoDB (Mongoose), Node.js API routes
-- **Payments**: Razorpay
-- **Email**: Nodemailer with Gmail SMTP
+* **Frontend**: Next.js, React, Tailwind CSS
+* **State Management**: Redux
+* **Backend**: MongoDB (Mongoose), Node.js API routes
+* **Payments**: Razorpay
+* **Email**: Nodemailer with Gmail SMTP
+
+---
+
+## 📦 Dummy Products Import
+
+To quickly populate your database with sample products, we've included `test.products.json` in the project root. This file contains a set of dummy products that mirror the schema used by Shop Mart.
+
+1. **Ensure MongoDB is running**
+
+   ```bash
+   mongod --config /usr/local/etc/mongod.conf
+   ```
+
+2. **Import the dummy data**
+
+   ```bash
+   mongoimport \
+     --uri "$MONGODB_URI" \
+     --collection products \
+     --file test.products.json \
+     --jsonArray \
+     --drop
+   ```
+
+   * `--jsonArray` treats the file as an array of documents.
+   * `--drop` clears the existing `products` collection before import.
+
+3. **Verify in MongoDB shell**
+
+   ```bash
+   mongo "$MONGODB_URI" --eval "db.products.find().pretty()"
+   ```
+
+After import, your Shop Mart app will display these dummy products on the home page and in the admin panel.
 
 ---
 
