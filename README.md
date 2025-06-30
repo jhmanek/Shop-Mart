@@ -96,7 +96,7 @@ RAZORPAY_SECRET_KEY=your_razorpay_secret_key_here
 
 ## 👨‍💻 Author
 
-**Jayesh H. Manek**  
+**Jayesh H Manek**  
 
 ---
 
