@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const products = await Product.find();
-    return NextResponse.json({ success: true, products }, { status: 200 });
+    return NextResponse.json(products); // ✅ return just array!
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message },

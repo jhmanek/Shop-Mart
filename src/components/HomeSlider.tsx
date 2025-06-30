@@ -54,8 +54,10 @@ export default function HomeSlider() {
                   fill
                   className="object-fill rounded-xl"
                   sizes="(max-width: 768px) 100vw, 100vw"
-                  priority={img.id === 1} // preload first image
+                  priority={img.id === 1}
                 />
+                {/* Overlay */}
+                {/* <div className="absolute inset-0 dark:bg-black/50 rounded-xl z-10" /> */}
               </div>
             </SwiperSlide>
           ))}

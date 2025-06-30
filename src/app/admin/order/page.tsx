@@ -520,7 +520,7 @@ export default function AdminOrdersTable() {
                     Date: {new Date(order.createdAt).toLocaleDateString()}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Total: ₹{order.totalAmount}
+                    Total: ₹{order.totalAmount.toFixed(2)}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     Items:{" "}

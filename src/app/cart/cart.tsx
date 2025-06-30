@@ -8,7 +8,6 @@ import {
   decreaseQuantity,
   clearCart,
   setCart,
-  removeFromCart,
 } from "@/app/cart/cartslice";
 import { RootState } from "@/store/store";
 import {
@@ -207,7 +206,7 @@ export default function Cart({ isOpen, onClose }: CartProps) {
       }`}
     >
       <div className="max-w-5xl mx-auto mt-10 mb-20 px-4 sm:px-10">
-        <div className="flex justify-between items-center border-b dark:border-zinc-700 pb-4 mb-6">
+        <div className="flex justify-between items-center border-b border-b-gray-200 dark:border-zinc-700 pb-4 mb-6">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#FF3F6C]">
             My Cart
           </h2>

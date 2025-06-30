@@ -32,6 +32,10 @@ const orderSchema = new Schema(
         },
       },
     ],
+    estimatedDelivery: {
+      type: Date,
+      required: true,
+    },
     totalAmount: {
       type: Number,
       required: true,

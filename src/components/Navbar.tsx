@@ -21,6 +21,7 @@ const userNavLinks = [
   { label: "Home", path: "/" },
   { label: "About", path: "/Pages/about" },
   { label: "Contact Us", path: "/Pages/contact" },
+  { label: "View Orders", path: "/Pages/order" },
 ];
 
 const adminNavLinks = [

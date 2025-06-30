@@ -187,7 +187,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col dark:text-white dark:bg-black">
       <HomeSlider />
-      {/* Category Filters */}
       <div className="flex overflow-x-auto gap-6 px-4 py-4 sm:px-8 mb-6 text-sm font-semibold text-gray-700 bg-white border-b border-b-[#02010136] dark:text-white dark:bg-black dark:border-b-[rgba(255,255,255,0.5)]">
         {["", ...categories].map((cat) => {
           const isActive = categoryFilter === cat;
@@ -217,7 +216,6 @@ export default function HomePage() {
         })}
       </div>
 
-      {/* Product Grid */}
       <main className="flex-grow">
         {error ? (
           <p className="text-center text-red-500 mt-10">{error}</p>

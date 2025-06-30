@@ -48,13 +48,17 @@ export default function AdminProductsPage() {
         .then(async (res) => {
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            console.error("API Error:", err);
             throw new Error(err.error || "Failed to fetch products");
           }
           return res.json();
         })
-        .then((data: Product[]) => {
-          setProducts(data);
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setProducts(data);
+          } else {
+            console.error("Unexpected data format:", data);
+            setProducts([]); // fallback
+          }
           setAuthorized(true);
         })
         .catch((err) => {
@@ -71,7 +75,6 @@ export default function AdminProductsPage() {
 
   const deleteProduct = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
-
     if (!token) {
       alert("Unauthorized. Please login again.");
       return;
@@ -158,7 +161,7 @@ export default function AdminProductsPage() {
                   <img
                     src={product.image}
                     alt={product.title || "Product Image"}
-                    className="w-full h-40 object-contain mb-4 rounded-lg bg-gray-50 dark:bg-zinc-700   "
+                    className="w-full h-40 object-contain mb-4 rounded-lg bg-gray-50 dark:bg-zinc-700"
                   />
                   <h2 className="text-lg font-semibold text-gray-800 dark:text-white line-clamp-2 min-h-[3rem]">
                     {product.title}

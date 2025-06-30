@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticate } from "@/lib/authentication";
 import User from "@/model/user";
 import { rateLimit } from "@/lib/rateLimiter";
+import Order from "@/model/order";
 
 export async function GET(req: NextRequest) {
   const user: any = await authenticate(req);
@@ -86,13 +87,17 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
+    // 🔥 Step 1: Delete user's orders first
+    await Order.deleteMany({ user: user._id });
+
+    // 🔥 Step 2: Delete the user
     const deletedUser = await User.findByIdAndDelete(user._id);
     if (!deletedUser) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json(
-      { message: "Account deleted successfully" },
+      { message: "Account and all related orders deleted successfully" },
       { status: 200 }
     );
   } catch (err) {

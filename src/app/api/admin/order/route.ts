@@ -298,6 +298,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    const estimatedDeliveryDate = new Date(
+      Date.now() + 5 * 24 * 60 * 60 * 1000
+    );
 
     const newOrder = await Order.create({
       user: user._id,
@@ -312,6 +315,7 @@ export async function POST(req: NextRequest) {
           : paymentStatus === "paid"
           ? "confirmed"
           : "pending",
+      estimatedDelivery: estimatedDeliveryDate,
     });
 
     return NextResponse.json({ success: true, order: newOrder });
