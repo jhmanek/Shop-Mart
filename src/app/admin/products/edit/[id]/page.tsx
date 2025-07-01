@@ -12,7 +12,7 @@ export default function EditProductPage() {
   const [product, setProduct] = useState({
     title: "",
     description: "",
-    price: 0,
+    price: undefined,
     category: "",
     image: "",
   });
@@ -92,7 +92,7 @@ export default function EditProductPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/admin/products", {
+      const res = await fetch(" http://192.168.0.137:3000/api/admin/products", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -185,7 +185,7 @@ export default function EditProductPage() {
                 <input
                   type={field === "price" ? "number" : "text"}
                   step={field === "price" ? "0.01" : undefined}
-                  min={field === "price" ? "0" : undefined}
+                  // min={field === "price" ? "0" : undefined}
                   placeholder={`Enter ${field}`}
                   className="w-full border text-gray-800 dark:text-gray-200 dark:bg-zinc-700 border-gray-300 dark:border-gray-600 p-3 rounded-lg focus:ring-2 focus:ring-pink-400 dark:focus:ring-pink-300 focus:outline-none"
                   value={(product as any)[field]}
@@ -194,7 +194,7 @@ export default function EditProductPage() {
                       ...product,
                       [field]:
                         field === "price"
-                          ? Number(e.target.value)
+                          ? String(e.target.value)
                           : e.target.value,
                     })
                   }

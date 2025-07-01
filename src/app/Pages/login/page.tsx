@@ -8,7 +8,9 @@ import Link from "next/link";
 import { HiEye, HiEyeOff } from "react-icons/hi";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { addToCart } from "@/app/cart/cartslice";
+import { setCart } from "@/app/cart/cartslice";
+import { toast } from "react-hot-toast";
+import CustomToast from "@/components/customToast";
 
 type LoginFormInputs = {
   email: string;
@@ -26,6 +28,7 @@ const LoginPage: React.FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [fade, setFade] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
 
@@ -38,6 +41,7 @@ const LoginPage: React.FC = () => {
   };
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
+    setLoading(true);
     try {
       const response = await axios.post(
         "http://localhost:3000/api/login",
@@ -54,26 +58,51 @@ const LoginPage: React.FC = () => {
         });
         const cartData = await cartRes.json();
         if (cartData?.cart?.length) {
-          cartData.cart.forEach((item: any) => {
-            dispatch(addToCart(item));
-          });
+          dispatch(setCart(cartData.cart));
         }
 
-        if (user.role === "admin") {
-          router.push("/admin/products");
-        } else {
-          router.push("/");
-        }
+        toast.custom((t) => (
+          <CustomToast type="success" message="Login successful!" toast={t} />
+        ));
+
+        router.push(user.role === "admin" ? "/admin/products" : "/");
       } else {
-        alert("Invalid email or password");
+        toast.custom((t) => (
+          <CustomToast
+            type="error"
+            message="Invalid email or password"
+            toast={t}
+          />
+        ));
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      alert(
-        "Login failed: " + (error.response?.data?.message || error.message)
-      );
+      toast.custom((t) => (
+        <CustomToast
+          type="error"
+          message={
+            "Login failed: " + (error.response?.data?.message || error.message)
+          }
+          toast={t}
+        />
+      ));
+    } finally {
+      setLoading(false);
     }
   };
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-black">
+        <div className="flex flex-col items-center space-y-4">
+          <img
+            src="/favicon.png"
+            alt="Shop Mart Logo"
+            className="w-24 h-24 md:w-32 md:h-32 object-contain animate-bounce dark:invert-75"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-black text-black dark:text-white">

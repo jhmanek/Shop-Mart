@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
 import { HiEye, HiEyeOff } from "react-icons/hi";
+import { toast } from "react-hot-toast";
+import CustomToast from "@/components/customToast"; // adjust this path if needed
 
 type SignupFormInputs = {
   name: string;
@@ -24,6 +26,7 @@ const SignupPage: React.FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [fade, setFade] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const toggleShowPassword = () => {
     setFade(false);
@@ -34,6 +37,7 @@ const SignupPage: React.FC = () => {
   };
 
   const onSubmit: SubmitHandler<SignupFormInputs> = async (data) => {
+    setLoading(true);
     try {
       const response = await axios.post(
         "http://localhost:3000/api/register",
@@ -48,18 +52,48 @@ const SignupPage: React.FC = () => {
           localStorage.setItem("user", JSON.stringify(user));
         }
 
-        alert("Signup successful!");
+        toast.custom((t) => (
+          <CustomToast type="success" message="Signup successful!" toast={t} />
+        ));
+
         router.push("/");
       } else {
-        alert("Unexpected response status: " + response.status);
+        toast.custom((t) => (
+          <CustomToast
+            type="error"
+            message={"Unexpected response: " + response.status}
+            toast={t}
+          />
+        ));
       }
     } catch (error: any) {
       console.error("Signup error:", error);
-      alert(
-        "Signup failed: " + (error.response?.data?.message || error.message)
-      );
+      toast.custom((t) => (
+        <CustomToast
+          type="error"
+          message={
+            "Signup failed: " + (error.response?.data?.message || error.message)
+          }
+          toast={t}
+        />
+      ));
+    } finally {
+      setLoading(false);
     }
   };
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-black">
+        <div className="flex flex-col items-center space-y-4">
+          <img
+            src="/favicon.png"
+            alt="Shop Mart Logo"
+            className="w-24 h-24 md:w-32 md:h-32 object-contain animate-bounce dark:invert-75"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white text-black dark:bg-black dark:text-white">

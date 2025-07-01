@@ -20,6 +20,34 @@ export default function ProfilePage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const router = useRouter();
+  const [screenSize, setScreenSize] = useState<number>(0);
+
+  useEffect(() => {
+    const handleResize = () => setScreenSize(window.innerWidth);
+
+    handleResize();
+    if (screenSize >= 1024) {
+      window.scrollTo(0, 0);
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (screenSize >= 1024) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "scroll";
+    }
+
+    return () => {
+      document.body.style.overflow = "scroll";
+    };
+  }, [screenSize]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -135,9 +163,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="bg-white dark:bg-black text-black dark:text-white flex flex-col lg:flex-row">
+    <div className=" bg-white dark:bg-black text-black dark:text-white flex flex-col lg:flex-row">
       {user && (
-        <aside className="w-full lg:w-64 bg-white dark:bg-black p-6 border-b lg:border-r lg:border-b-0 border-gray-200 dark:border-gray-700 flex flex-row lg:flex-col justify-between lg:justify-start items-center lg:items-start gap-4">
+        <aside className="w-full lg:min-h-screen lg:w-64 bg-white dark:bg-black p-6 border-b lg:border-r lg:border-b-0 border-gray-200 dark:border-gray-700 flex flex-col sm:flex-col justify-between lg:justify-start items-center lg:items-start gap-4">
           <button className="w-full text-left px-4 py-2 bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300 rounded font-bold">
             Personal Information
           </button>
@@ -150,15 +178,27 @@ export default function ProfilePage() {
         </aside>
       )}
 
-      <main className="flex-1 flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-10 overflow-x-hidden m-0">
+      <main className="flex-1 flex items-center justify-center  px-4 py-10 overflow-x-hidden m-0">
         {user ? (
-          <div className="w-full max-w-3xl md:mt-20 lg:mt-40 ">
+          <div className="w-full max-w-3xl ">
             {/* Top Title + Delete Button */}
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold">Personal Information</h1>
+            <div className="flex flex-col gap-2  md:flex-row justify-between md:items-center mb-6   md:gap-0">
+              <h1 className="text-2xl font-bold text-center">
+                Personal Information
+              </h1>
               <button
-                onClick={() => setShowDeleteModal(true)}
-                className="text-red-600 border border-red-600 px-3 py-1 text-sm rounded hover:bg-red-50 dark:hover:bg-red-900 cursor-pointer"
+                onClick={() => {
+                  if (user.role !== "admin") setShowDeleteModal(true);
+                }}
+                disabled={user.role === "admin"}
+                className={`border w-full px-3 py-1 text-sm rounded md:w-fit ${
+                  user.role === "admin"
+                    ? "text-gray-400 border-gray-300 cursor-not-allowed bg-gray-100 dark:text-gray-500 dark:border-gray-600 dark:bg-neutral-800"
+                    : "text-red-600 border-red-600 hover:bg-red-50 dark:hover:bg-red-900 cursor-pointer"
+                }`}
+                title={
+                  user.role === "admin" ? "Admin account can't be deleted" : ""
+                }
               >
                 Delete Account
               </button>

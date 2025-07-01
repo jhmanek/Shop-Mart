@@ -52,7 +52,7 @@ export default function RootLayout({
         />
       </Head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={` dark:!bg-black ${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
         <ReduxProvider>
@@ -60,7 +60,14 @@ export default function RootLayout({
             <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
           </Providers>
         </ReduxProvider>
-        <Toaster position="top-right" reverseOrder={false} />
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+          containerStyle={{
+            top: 80, // 👈 shifts toast 80px from the top
+            // right: 16,
+          }}
+        />
       </body>
     </html>
   );

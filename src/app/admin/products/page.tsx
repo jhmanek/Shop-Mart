@@ -110,12 +110,12 @@ export default function AdminProductsPage() {
 
   if (authorized === null || loading || redirectLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-zinc-900">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-black">
         <div className="flex flex-col items-center space-y-4">
           <img
             src="/favicon.png"
             alt="Shop Mart Logo"
-            className="w-24 h-24 md:w-32 md:h-32 object-contain animate-bounce"
+            className="w-24 h-24 md:w-32 md:h-32 object-contain animate-bounce dark:invert-75"
           />
         </div>
       </div>
@@ -127,8 +127,8 @@ export default function AdminProductsPage() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-pink-800 to-gray-100 dark:from-pink-900 dark:to-zinc-900 px-6 py-8">
       <div className="w-full max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8 backdrop-blur-sm bg-white/30 dark:bg-white/10 p-4 rounded-xl shadow">
-          <h1 className="text-3xl font-semibold text-pink-800 dark:text-pink-400 drop-shadow-sm">
+        <div className="flex  flex-col md:flex-row gap-2 md:gap-0 items-center justify-between mb-8 backdrop-blur-sm bg-white/30 dark:bg-white/10 p-4 rounded-xl shadow">
+          <h1 className="text-xl md:text-3xl font-semibold text-pink-800 dark:text-pink-400 drop-shadow-sm">
             Product Management
           </h1>
 
@@ -139,7 +139,7 @@ export default function AdminProductsPage() {
                 router.push("/admin/products/add");
               }, 300);
             }}
-            className="inline-flex items-center gap-2 bg-white dark:bg-zinc-800 text-pink-700 dark:text-pink-400 px-5 py-2 rounded-full text-sm font-semibold shadow hover:bg-pink-100 dark:hover:bg-pink-900 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 bg-white dark:bg-zinc-800 text-pink-700 dark:text-pink-400 px-5 py-2 rounded-full text-sm font-semibold shadow hover:bg-pink-200 dark:hover:bg-pink-900 transition-all cursor-pointer"
           >
             <Plus size={18} />
             Add Product

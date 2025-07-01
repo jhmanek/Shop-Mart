@@ -144,7 +144,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const { id, title, price, image, category } = await req.json();
-    if (!id || !title || typeof price !== "number" || !image || !category) {
+    if (!id || !title || typeof price !== "string" || !image || !category) {
       return NextResponse.json(
         { error: "All fields required" },
         { status: 400 }

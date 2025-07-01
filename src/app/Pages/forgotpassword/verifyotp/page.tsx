@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-hot-toast";
+import CustomToast from "@/components/customToast"; // adjust path if needed
 
 const VerifyOtpPage = () => {
   const searchParams = useSearchParams();
@@ -17,13 +18,7 @@ const VerifyOtpPage = () => {
     formState: { errors, isSubmitting },
   } = useForm<{ otp: string }>();
 
-  const [message, setMessage] = useState("");
-  const [isError, setIsError] = useState(false);
-
   const onSubmit = async (data: { otp: string }) => {
-    setMessage("");
-    setIsError(false);
-
     try {
       const otpPayload =
         context === "email-change"
@@ -40,7 +35,9 @@ const VerifyOtpPage = () => {
 
       const res = await axios.post("/api/verify-otp", otpPayload);
 
-      setMessage(res.data.message);
+      toast.custom((t) => (
+        <CustomToast type="success" message={res.data.message} toast={t} />
+      ));
 
       if (res.data.success) {
         setTimeout(() => {
@@ -50,12 +47,15 @@ const VerifyOtpPage = () => {
               : `/Pages/forgotpassword/resetpassword?email=${email}`
           );
         }, 1000);
-      } else {
-        setIsError(true);
       }
     } catch (err: any) {
-      setIsError(true);
-      setMessage(err.response?.data?.message || "OTP verification failed.");
+      toast.custom((t) => (
+        <CustomToast
+          type="error"
+          message={err.response?.data?.message || "OTP verification failed."}
+          toast={t}
+        />
+      ));
     }
   };
 
@@ -108,8 +108,8 @@ const VerifyOtpPage = () => {
               />
               <label
                 className={`absolute text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 left-0 origin-[0]
-                peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-gray-400
-                peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-pink-600`}
+                peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100
+                peer-placeholder-shown:text-gray-400 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-pink-600`}
               >
                 Enter 6-digit OTP
               </label>
@@ -128,16 +128,6 @@ const VerifyOtpPage = () => {
               {isSubmitting ? "Verifying..." : "Verify OTP"}
             </button>
           </form>
-
-          {message && (
-            <p
-              className={`text-center text-sm ${
-                isError ? "text-red-600" : "text-green-600 dark:text-green-400"
-              }`}
-            >
-              {message}
-            </p>
-          )}
         </div>
       </div>
     </div>

@@ -81,7 +81,7 @@ const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Icons */}
-        <div className="flex items-center sm:space-x-4 space-x-1">
+        <div className=" sm:gap-2 flex items-center sm:space-2 space-x-1">
           {/* Cart - only for non-admin */}
           {role !== "admin" && (
             <div
@@ -123,7 +123,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Nav - now for all roles */}
       {navOpen && (
-        <nav className="md:hidden bg-white dark:bg-black  px-4 py-3 mt-3 flex justify-center space-x-8 font-semibold text-gray-700 dark:text-gray-200">
+        <nav className="md:hidden bg-white dark:bg-black text-[16px] px-4 py-3 mt-3 flex flex-col items-center gap-2 justify-center  font-semibold text-gray-700 dark:text-gray-200">
           {linksToShow.map(({ label, path }) => (
             <Link
               key={label}

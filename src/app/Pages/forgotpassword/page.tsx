@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+import CustomToast from "@/components/customToast"; // Adjust path if needed
 
 const ForgotPasswordPage = () => {
   const {
@@ -13,19 +15,17 @@ const ForgotPasswordPage = () => {
     formState: { errors, isSubmitting },
   } = useForm<{ email: string }>();
 
-  const [message, setMessage] = useState("");
-  const [isError, setIsError] = useState(false);
   const router = useRouter();
 
   const onSubmit = async (data: { email: string }) => {
-    setMessage("");
-    setIsError(false);
     try {
       const res = await axios.post("/api/forgot-password", {
         email: data.email,
       });
 
-      setMessage(res.data.message);
+      toast.custom((t) => (
+        <CustomToast type="success" message={res.data.message} toast={t} />
+      ));
 
       if (res.data.success) {
         setTimeout(() => {
@@ -33,8 +33,13 @@ const ForgotPasswordPage = () => {
         }, 1500);
       }
     } catch (error: any) {
-      setIsError(true);
-      setMessage(error.response?.data?.message || "Something went wrong.");
+      toast.custom((t) => (
+        <CustomToast
+          type="error"
+          message={error.response?.data?.message || "Something went wrong."}
+          toast={t}
+        />
+      ));
     }
   };
 
@@ -129,16 +134,6 @@ const ForgotPasswordPage = () => {
               )}
             </button>
           </form>
-
-          {message && (
-            <p
-              className={`text-center text-sm mt-2 ${
-                isError ? "text-red-500" : "text-green-600 dark:text-green-400"
-              }`}
-            >
-              {message}
-            </p>
-          )}
         </div>
       </div>
     </div>

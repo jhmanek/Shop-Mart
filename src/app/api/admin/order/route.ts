@@ -317,6 +317,7 @@ export async function POST(req: NextRequest) {
           : "pending",
       estimatedDelivery: estimatedDeliveryDate,
     });
+    // console.log("New Order:", newOrder);
 
     return NextResponse.json({ success: true, order: newOrder });
   } catch (error: any) {
@@ -328,6 +329,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// 🧾 GET: Admin fetch orders
 // 🧾 GET: Admin fetch orders
 export async function GET(req: NextRequest) {
   try {
@@ -371,10 +373,21 @@ export async function GET(req: NextRequest) {
         else if (hoursPassed < 48) newStatus = "shipped";
         else newStatus = "delivered";
 
+        let shouldSave = false;
+
+        if (!order.estimatedDelivery) {
+          order.estimatedDelivery = new Date(
+            order.createdAt.getTime() + 5 * 24 * 60 * 60 * 1000
+          );
+          shouldSave = true;
+        }
+
         if (newStatus !== order.orderStatus) {
           order.orderStatus = newStatus;
-          await order.save();
+          shouldSave = true;
         }
+
+        if (shouldSave) await order.save();
 
         return order;
       })

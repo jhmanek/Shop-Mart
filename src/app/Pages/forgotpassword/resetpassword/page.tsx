@@ -1,7 +1,10 @@
 "use client";
+
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-hot-toast";
+import CustomToast from "@/components/customToast";
 
 type FormValues = {
   email: string;
@@ -15,7 +18,6 @@ export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
   const {
     register,
@@ -45,12 +47,13 @@ export default function ResetPasswordPage() {
 
   const onSubmit = async (data: FormValues) => {
     if (data.newPassword !== data.confirmPassword) {
-      setMessage("Passwords do not match.");
+      toast.custom((t) => (
+        <CustomToast type="error" message="Passwords do not match." toast={t} />
+      ));
       return;
     }
 
     setLoading(true);
-    setMessage("");
 
     try {
       const res = await fetch("/api/reset-password", {
@@ -66,13 +69,27 @@ export default function ResetPasswordPage() {
       const result = await res.json();
 
       if (res.ok) {
-        setMessage("Password reset successful!");
+        toast.custom((t) => (
+          <CustomToast
+            type="success"
+            message="Password reset successful!"
+            toast={t}
+          />
+        ));
         setTimeout(() => router.push("/Pages/login"), 2000);
       } else {
-        setMessage(result.message || "Failed to reset password.");
+        toast.custom((t) => (
+          <CustomToast
+            type="error"
+            message={result.message || "Failed to reset password."}
+            toast={t}
+          />
+        ));
       }
     } catch {
-      setMessage("Something went wrong.");
+      toast.custom((t) => (
+        <CustomToast type="error" message="Something went wrong." toast={t} />
+      ));
     } finally {
       setLoading(false);
     }
@@ -201,18 +218,6 @@ export default function ResetPasswordPage() {
               {loading ? "Resetting..." : "Reset Password"}
             </button>
           </form>
-
-          {message && (
-            <p
-              className={`text-center text-sm mt-4 ${
-                message.toLowerCase().includes("success")
-                  ? "text-green-600 dark:text-green-400"
-                  : "text-red-600"
-              }`}
-            >
-              {message}
-            </p>
-          )}
         </div>
       </div>
     </div>

@@ -14,7 +14,7 @@ const ThemeButton = ({ className = "" }: ThemeButtonProps) => {
   return (
     <div
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className={`flex items-center justify-center w-10 h-10 bg-b-surface2 rounded-full cursor-pointer transition-all hover:shadow-md ${className}`}
+      className={`flex items-center justify-center bg-b-surface2 rounded-full cursor-pointer transition-all hover:shadow-md ${className}`}
     >
       <Image
         src={"/sun.2.png"}

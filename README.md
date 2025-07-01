@@ -6,13 +6,13 @@
 
 ## 🚀 Features
 
-* 🔐 JWT-based user & admin authentication
-* 🛒 Cart management with MongoDB persistence
-* 📦 Product listing, filtering, and infinite scroll
-* 🧾 Razorpay payment integration
-* 📤 Email-based OTP verification (Nodemailer)
-* 🧑‍💻 Admin dashboard to manage orders & products
-* 🌗 Light/Dark mode toggle
+- 🔐 JWT-based user & admin authentication
+- 🛒 Cart management with MongoDB persistence
+- 📦 Product listing, filtering, and infinite scroll
+- 🧾 Razorpay payment integration
+- 📤 Email-based OTP verification (Nodemailer)
+- 🧑‍💻 Admin dashboard to manage orders & products
+- 🌗 Light/Dark mode toggle
 
 ---
 
@@ -84,17 +84,17 @@ RAZORPAY_SECRET_KEY=your_razorpay_secret_key_here
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000)
+5. Open [http://localhost:3000](http://192.168.0.137:3000)
 
 ---
 
 ## 🧪 Tech Stack
 
-* **Frontend**: Next.js, React, Tailwind CSS
-* **State Management**: Redux
-* **Backend**: MongoDB (Mongoose), Node.js API routes
-* **Payments**: Razorpay
-* **Email**: Nodemailer with Gmail SMTP
+- **Frontend**: Next.js, React, Tailwind CSS
+- **State Management**: Redux
+- **Backend**: MongoDB (Mongoose), Node.js API routes
+- **Payments**: Razorpay
+- **Email**: Nodemailer with Gmail SMTP
 
 ---
 
@@ -119,8 +119,8 @@ To quickly populate your database with sample products, we've included `test.pro
      --drop
    ```
 
-   * `--jsonArray` treats the file as an array of documents.
-   * `--drop` clears the existing `products` collection before import.
+   - `--jsonArray` treats the file as an array of documents.
+   - `--drop` clears the existing `products` collection before import.
 
 3. **Verify in MongoDB shell**
 
