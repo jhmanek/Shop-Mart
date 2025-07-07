@@ -32,6 +32,15 @@ const STATUS_STEPS = [
   },
 ];
 
+const REFUND_STEPS = [
+  { key: "failed", label: "Cancelled", icon: <PackageX className="w-4 h-4" /> },
+  {
+    key: "refund",
+    label: "Refund",
+    icon: <BanknoteX className="w-4 h-4" />,
+  },
+];
+
 const FAILED_STEPS = [
   {
     key: "payment-failed",
@@ -69,13 +78,20 @@ export default function OrderHistoryPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    axios
-      .get("/api/user/order", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setOrders(res.data))
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false));
+
+    const fetchOrders = () =>
+      axios
+        .get("/api/user/order", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => setOrders(res.data))
+        .catch(() => setOrders([]))
+        .finally(() => setLoading(false));
+
+    fetchOrders();
+
+    const interval = setInterval(fetchOrders, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const getStepIndex = (status: string) =>
@@ -85,7 +101,7 @@ export default function OrderHistoryPage() {
     const token = localStorage.getItem("token");
     if (!cancelModal.orderId || !token) return;
     try {
-      await axios.patch(
+      await axios.post(
         `/api/order/${cancelModal.orderId}`,
         {},
         {
@@ -144,14 +160,15 @@ export default function OrderHistoryPage() {
 
   return (
     <div className="min-h-screen px-4 py-10 bg-white dark:bg-black text-black dark:text-white">
-      <div className="flex flex-col items-center mb-10 hover:scale-95 ease-in-out p-8 rounded-xl   transform hover:translate-y-2  transition-all duration-500">
-        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-800 dark:text-white transform hover:scale-95 hover:text-yellow-400 transition-all duration-500 ease-in-out text-shadow-lg ">
+      <div className="flex flex-col items-center p-6 rounded-xl ">
+        <h1 className="text-3xl sm:text-4xl font-semibold text-neutral-800 dark:text-white mb-1">
           My Orders
         </h1>
-        <span className="uppercase text-xs tracking-widest text-gray-500 dark:text-gray-500 mb-2 transform hover:translate-x-3 hover:text-green-700 transition-all duration-500 ease-in-out animate-pulse">
+        <span className="text-sm uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Your Store Activity
         </span>
       </div>
+
       {cancelModal.open && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl max-w-md w-full shadow-xl">
@@ -185,8 +202,13 @@ export default function OrderHistoryPage() {
           const isFailed =
             order.orderStatus === "failed" ||
             order.orderStatus === "payment_failed";
+          const refund = order.paymentStatus === "refunded";
 
-          const stepsToRender = isFailed ? FAILED_STEPS : STATUS_STEPS;
+          const stepsToRender = isFailed
+            ? FAILED_STEPS
+            : refund
+            ? REFUND_STEPS
+            : STATUS_STEPS;
           const activeStep = isFailed
             ? FAILED_STEPS.length - 1
             : getStepIndex(order.orderStatus);
@@ -198,7 +220,6 @@ export default function OrderHistoryPage() {
               rounded-lg p-4 sm:p-6 transition-transform duration-300 
               hover:scale-[1.01] hover:border-primary/70"
             >
-              {/* Header */}
               <div className="flex flex-col sm:flex-row justify-between mb-4 text-sm text-gray-500 dark:text-gray-400 gap-1">
                 <p>
                   <span className="font-semibold">Order ID:</span> #
@@ -210,20 +231,19 @@ export default function OrderHistoryPage() {
                 </p>
               </div>
 
-              {/* Status Progress Tracker */}
               <div className="relative flex justify-between items-center mb-6 overflow-x-auto sm:overflow-visible">
                 {stepsToRender.map((step, index) => {
                   const isActive = index <= activeStep;
 
                   const getCircleColor = () => {
-                    if (isFailed) return "bg-red-600";
+                    if (isFailed || refund) return "bg-red-600";
                     if (index === activeStep && step.key === "shipped")
                       return "bg-orange-500";
                     return isActive ? "bg-green-600" : "bg-gray-400";
                   };
 
                   const getTextColor = () => {
-                    if (isFailed) return "text-red-500";
+                    if (isFailed || refund) return "text-red-500";
                     if (index === activeStep && step.key === "shipped")
                       return "text-orange-500";
                     return isActive
@@ -232,15 +252,7 @@ export default function OrderHistoryPage() {
                   };
 
                   const getLineColor = () => {
-                    if (isFailed) return "bg-red-500";
-
-                    const placedIndex = getStepIndex("place");
-                    const shippedIndex = getStepIndex("shipped");
-
-                    if (index === placedIndex && activeStep >= shippedIndex) {
-                      return "bg-orange-400";
-                    }
-
+                    if (isFailed || refund) return "bg-red-500";
                     return index < activeStep ? "bg-green-500" : "bg-gray-400";
                   };
 
@@ -258,7 +270,6 @@ export default function OrderHistoryPage() {
                         {step.label}
                       </p>
 
-                      {/* Line */}
                       {index < stepsToRender.length - 1 && (
                         <div className="absolute top-4 left-1/2 w-full h-1 transform -translate-y-1/2 z-0">
                           <div
@@ -272,7 +283,6 @@ export default function OrderHistoryPage() {
                 })}
               </div>
 
-              {/* Product Items */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4 dark:border-neutral-700">
                 {order.items.map((item: any, i: number) => (
                   <div key={i} className="flex gap-4 items-center">
@@ -291,7 +301,6 @@ export default function OrderHistoryPage() {
                 ))}
               </div>
 
-              {/* Order Summary */}
               <div className="mt-4 text-sm text-gray-700 dark:text-gray-300 space-y-1">
                 <p>
                   <span className="font-semibold">Total:</span> ₹
@@ -303,23 +312,26 @@ export default function OrderHistoryPage() {
                 </p>
                 <p>
                   <span className="font-semibold">Est. Delivery:</span>{" "}
-                  {order.estimatedDelivery
+                  {order.orderStatus === "failed" ||
+                  order.orderStatus === "cancelled"
+                    ? "Order Cancelled"
+                    : order.estimatedDelivery
                     ? format(new Date(order.estimatedDelivery), "dd MMM yyyy")
                     : "Not available"}
                 </p>
-                {order.orderStatus !== "delivered" &&
-                  order.orderStatus !== "failed" && (
-                    <div className="pt-4">
-                      <button
-                        onClick={() =>
-                          setCancelModal({ open: true, orderId: order._id })
-                        }
-                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded shadow text-sm"
-                      >
-                        Cancel Order
-                      </button>
-                    </div>
-                  )}
+
+                {!(isFailed || refund) && (
+                  <div className="pt-4">
+                    <button
+                      onClick={() =>
+                        setCancelModal({ open: true, orderId: order._id })
+                      }
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded shadow text-sm"
+                    >
+                      Cancel Order
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           );

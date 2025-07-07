@@ -330,7 +330,6 @@ export async function POST(req: NextRequest) {
 }
 
 // 🧾 GET: Admin fetch orders
-// 🧾 GET: Admin fetch orders
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
@@ -403,13 +402,12 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// 🛠️ PATCH: Admin update order status/payment
 export async function PATCH(req: NextRequest) {
   try {
     await connectDB();
 
     const ip = req.headers.get("x-forwarded-for") || "unknown";
-    const allowed = rateLimit(ip, 10, 3000); // Admin update limit
+    const allowed = rateLimit(ip, 10, 3000);
     if (!allowed) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
@@ -437,13 +435,12 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// ❌ DELETE: Admin delete order
 export async function DELETE(req: NextRequest) {
   try {
     await connectDB();
 
     const ip = req.headers.get("x-forwarded-for") || "unknown";
-    const allowed = rateLimit(ip, 5, 3000); // Delete limit tighter
+    const allowed = rateLimit(ip, 5, 3000);
     if (!allowed) {
       return NextResponse.json(
         { error: "Too many delete attempts" },

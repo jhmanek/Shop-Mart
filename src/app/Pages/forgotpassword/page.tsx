@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import CustomToast from "@/components/customToast"; // Adjust path if needed
+import CustomToast from "@/components/customToast";
 
 const ForgotPasswordPage = () => {
   const {
@@ -20,7 +20,7 @@ const ForgotPasswordPage = () => {
   const onSubmit = async (data: { email: string }) => {
     try {
       const res = await axios.post("/api/forgot-password", {
-        email: data.email,
+        email: data.email.trim(),
       });
 
       toast.custom((t) => (
@@ -33,19 +33,20 @@ const ForgotPasswordPage = () => {
         }, 1500);
       }
     } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Something went wrong.";
+
       toast.custom((t) => (
-        <CustomToast
-          type="error"
-          message={error.response?.data?.message || "Something went wrong."}
-          toast={t}
-        />
+        <CustomToast type="error" message={message} toast={t} />
       ));
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-black">
-      {/* Left side image section */}
+      {/* Left Side Image Section */}
       <div className="hidden md:flex md:w-1/2 items-center justify-center bg-gradient-to-br from-pink-800 via-white to-pink-800 dark:via-black p-10">
         <div className="text-center space-y-6 max-w-sm">
           <img

@@ -464,6 +464,7 @@ export default function AdminOrdersTable() {
               <option value="paid"> Paid</option>
               <option value="pending"> Pending</option>
               <option value="failed"> Failed</option>
+              <option value="refunded">Refund</option>
             </select>
           </div>
         </div>
@@ -505,6 +506,8 @@ export default function AdminOrdersTable() {
                   ? "border-green-400 dark:border-green-500"
                   : order.paymentStatus === "pending"
                   ? "border-yellow-400 dark:border-yellow-500"
+                  : order.paymentStatus === "refunded"
+                  ? "	border-gray-400 dark:border-gray-500"
                   : "border-[#eee] dark:border-gray-700"
               }`}
             >
@@ -661,6 +664,7 @@ export default function AdminOrdersTable() {
                   <option value="paid">Paid</option>
                   <option value="pending">Pending</option>
                   <option value="failed">Failed</option>
+                  <option value="refunded">Refund</option>
                 </select>
               </div>
             </div>

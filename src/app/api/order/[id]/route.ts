@@ -1,41 +1,42 @@
-import { NextRequest, NextResponse } from "next/server";
+import Razorpay from "razorpay";
 import connectDB from "@/lib/mongoose";
 import Order from "@/model/order";
-import { authenticate } from "@/lib/authentication";
+import { NextResponse } from "next/server";
 
-export async function PATCH(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+const razorpay = new Razorpay({
+  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_SECRET_KEY!,
+});
+
+export async function POST(req: Request, context: { params: { id: string } }) {
+  await connectDB();
+
+  const { id } = await context.params;
+
   try {
-    const { params } = context; // ✅ correctly handled
-    const user = await authenticate(req);
-    if (!user)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const order = await Order.findById(id);
 
-    await connectDB();
-    const order = await Order.findById(params.id);
-
-    if (!order)
-      return NextResponse.json({ message: "Order not found" }, { status: 404 });
-
-    if (order.status === "cancelled" || order.status === "delivered")
+    if (!order || order.paymentStatus !== "paid") {
       return NextResponse.json(
-        { message: "Cannot cancel this order" },
+        { error: "Only paid orders can be refu nded" },
         { status: 400 }
       );
+    }
 
-    order.status = "cancelled";
+    console.log("Refunding payment ID:", order.paymentId);
+
+    const refund = await razorpay.payments.refund(order.paymentId, {});
+
+    order.refundId = refund.id;
+    order.paymentStatus = "refunded";
+    order.orderStatus = "cancelled";
     await order.save();
 
-    return NextResponse.json({
-      message: "Order cancelled successfully",
-      order,
-    });
-  } catch (error) {
-    console.error("Order cancel error:", error);
+    return NextResponse.json({ message: "Refund success", refund });
+  } catch (error: any) {
+    console.error("Refund Error:", JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { message: "Internal Server Error" },
+      { error: error?.error?.description || "Refund failed" },
       { status: 500 }
     );
   }
