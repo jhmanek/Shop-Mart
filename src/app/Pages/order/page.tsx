@@ -182,13 +182,13 @@ export default function OrderHistoryPage() {
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => setCancelModal({ open: false, orderId: null })}
-                className="px-4 py-2 text-sm rounded bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
+                className="px-4 py-2 text-sm rounded bg-gray-200 dark:bg-gray-700 text-black dark:text-white cursor-pointer"
               >
                 Exit
               </button>
               <button
                 onClick={handleCancelOrder}
-                className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
+                className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white cursor-pointer"
               >
                 Cancel Order
               </button>
@@ -326,7 +326,7 @@ export default function OrderHistoryPage() {
                       onClick={() =>
                         setCancelModal({ open: true, orderId: order._id })
                       }
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded shadow text-sm"
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded shadow text-sm cursor-pointer"
                     >
                       Cancel Order
                     </button>
